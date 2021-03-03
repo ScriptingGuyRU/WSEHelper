@@ -24,7 +24,7 @@ public class ServiceImpl implements Servise {
     }
 
     @Override
-    public List<Word> loadAll() {
+    public List<Word> loadAll() {//
         return repository.findAll();
     }
 }
