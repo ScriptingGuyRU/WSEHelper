@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     addNewWordCloseBtn = document.querySelector("#addNewWordCloseBtn");
     checkModalBtn = document.querySelector("#checkModalBtn");
     rusEngBtn = document.querySelector("#rus-engBtn");
+    engRusBtn = document.querySelector("#eng-rusBtn");
     acceptCheck = document.querySelector("#acceptCheck");
 
 
@@ -27,10 +28,11 @@ document.addEventListener('DOMContentLoaded', function () {
     })
 
     rusEngBtn.addEventListener("click", function () {
-        engRus = false;
-        $('#checkWordModal').modal('hide');
-        $('#checkWordMainModal').modal('show');
-        checkMain(false);
+        getCheckWord(false);
+    })
+
+    engRusBtn.addEventListener("click", function () {
+        getCheckWord(true);
     })
 
     acceptCheck.addEventListener("click", function () {
@@ -38,8 +40,6 @@ document.addEventListener('DOMContentLoaded', function () {
             let element = document.getElementById(`input${i}`);
             let word = element.value;
             let translate = element.getAttribute("translateWord");
-            alert(word);
-            alert(translate);
         }
     })
 })
@@ -69,8 +69,13 @@ function addNewWordByAddNewModal() {
     });
 }
 
-async function checkMain(engRus) {
-    let data = await checkMainRest();
+async function checkMain(engRus, count) {
+    let data;
+    if (count != null) {
+        data = await checkMainRestWithCount(count);
+    } else {
+        data = await checkMainRest(count);
+    }
 
     countWord = 0;
     data.forEach(function (word) {
@@ -79,14 +84,42 @@ async function checkMain(engRus) {
         let id = word.id;
         let rus = word.rus;
         let eng = word.eng;
-        let addTd = `<tr>
-                    <td>${id}</td>
+        let addTd;
+        if (engRus) {
+            addTd = `<tr>
                     <td id="russianWord${id}">${rus}</td>
                     <td id="englishWord${id}"><input id="input${id}" translateWord="${eng}" ></td>
                 </tr>'`;
+        } else {
+            addTd = `<tr>
+                    <td id="englishWord${id}">${eng}</td>
+                    <td id="russianWord${id}"><input id="input${id}" translateWord="${rus}" ></td>
+                </tr>'`;
+        }
         $('#checkWordTbody').append(addTd);
         countWord++;
     })
+}
+
+async function checkMainRestWithCount(count) {
+    let dataFromJSON;
+    let url = `http://localhost:8080/api/getAll/${count}`;
+    $.ajax({
+        url: url,
+        cache: false,
+        type: 'GET',
+        contentType: "application/json;charset=UTF-8",
+        dataType: 'json',
+        async: false,
+        success: function (data) {
+            dataFromJSON = data;
+        },
+        error: function () {
+            alert("Ошибка выполнения");
+        }
+    });
+    setTimeout(4000);
+    return dataFromJSON;
 }
 
 async function checkMainRest() {
@@ -99,7 +132,6 @@ async function checkMainRest() {
         dataType: 'json',
         async: false,
         success: function (data) {
-            // alert(data);
             dataFromJSON = data;
         },
         error: function () {
@@ -108,6 +140,17 @@ async function checkMainRest() {
     });
     setTimeout(4000);
     return dataFromJSON;
+}
+
+function getCheckWord(isEngRus) {
+    $('#checkWordModal').modal('hide');
+    $('#checkWordMainModal').modal('show');
+    let element = document.getElementById('countOfWord');
+    let count = element.value;
+    if (count == 0) {
+        count = null;
+    }
+    checkMain(isEngRus, count);
 }
 
 
