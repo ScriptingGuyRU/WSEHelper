@@ -15,4 +15,6 @@ public interface Servise {
 
     List<Word> loadAll();
 
+    List<Word> loadCont(Long count);
+
 }
